@@ -89,7 +89,22 @@ async function generateViaTool(
 }
 
 export async function POST(req: Request) {
-  const cfg = resolveRequestProvider(req);
+  let cfg: ReturnType<typeof resolveRequestProvider> = null;
+  try {
+    cfg = resolveRequestProvider(req);
+  } catch (e) {
+    // Bad BYOK headers (invalid URL, etc.) — keep response JSON.
+    return Response.json(
+      {
+        error:
+          e instanceof Error && /url/i.test(e.message)
+            ? "Invalid provider base URL in settings."
+            : "Invalid provider settings.",
+        code: "bad_provider_config",
+      },
+      { status: 400 },
+    );
+  }
   if (!cfg) {
     return Response.json(
       {

@@ -74,12 +74,19 @@ export function byokFromHeaders(req: Request): Byok | null {
         : host.includes("anthropic")
           ? "anthropic"
           : "custom";
-  return byokSchema.parse({
+  // Invalid baseURL from stale localStorage — fall back to preset default.
+  const safeBase =
+    baseURL && safeHost(baseURL) ? baseURL : PRESETS[preset].baseURL || undefined;
+  // Custom preset with no usable URL — can't call anything.
+  if (!safeBase) return null;
+  const parsed = byokSchema.safeParse({
     provider: preset,
-    baseURL,
+    baseURL: safeBase,
     apiKey,
     model: model || PRESETS[preset].defaultModel,
   });
+  if (!parsed.success) return null;
+  return parsed.data;
 }
 
 /** OAuth cookie payload written by OpenRouter callback. */

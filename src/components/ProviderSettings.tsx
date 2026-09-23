@@ -88,22 +88,36 @@ export function ProviderSettings({
   t: Dict;
 }) {
   const [open, setOpen] = useState(false);
-  const [form, setForm] = useState<ByokForm>(() => {
-    const byok = loadByok();
-    if (byok) return byok;
-    const model = loadModelPref();
-    return {
-      provider: "groq",
-      baseURL: PRESETS.groq.baseURL,
-      apiKey: "",
-      model: model || PRESETS.groq.defaultModel,
-    };
+  // SSR/client first paint must match — no localStorage until after mount.
+  const [mounted, setMounted] = useState(false);
+  const [form, setForm] = useState<ByokForm>({
+    provider: "groq",
+    baseURL: PRESETS.groq.baseURL,
+    apiKey: "",
+    model: PRESETS.groq.defaultModel,
   });
   const [saved, setSaved] = useState(false);
   const [status, setStatus] = useState<Status | null>(null);
   const [testing, setTesting] = useState(false);
   const [msg, setMsg] = useState<string | null>(null);
   const rootRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const byok = loadByok();
+    const model = loadModelPref();
+    // Hydration-safe: SSR HTML must match first client paint, then hydrate from localStorage.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setForm(
+      byok ??
+        {
+          provider: "groq",
+          baseURL: PRESETS.groq.baseURL,
+          apiKey: "",
+          model: model || PRESETS.groq.defaultModel,
+        },
+    );
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     if (!open) return;
@@ -218,8 +232,14 @@ export function ProviderSettings({
       });
       if (res.ok) setMsg(t.settings.testOk);
       else {
-        const data = (await res.json()) as { error?: string };
-        setMsg(data.error ?? t.settings.testFail);
+        let msg = t.settings.testFail;
+        try {
+          const data = (await res.json()) as { error?: string };
+          if (data.error) msg = data.error;
+        } catch {
+          msg = `HTTP ${res.status}`;
+        }
+        setMsg(msg);
       }
     } catch {
       setMsg(t.settings.testFail);
@@ -234,7 +254,7 @@ export function ProviderSettings({
     setMsg(t.settings.oauthCleared);
   };
 
-  const hasLocal = Boolean(loadByok()?.apiKey);
+  const hasLocal = mounted && Boolean(form.apiKey);
   const sourceLabel = hasLocal
     ? t.settings.sourceLocal
     : status?.oauth
@@ -245,7 +265,7 @@ export function ProviderSettings({
 
   const activeModel = hasLocal
     ? form.model
-    : status?.oauth?.model || loadModelPref() || null;
+    : status?.oauth?.model || (mounted ? loadModelPref() : null) || null;
 
   return (
     <div ref={rootRef} className="relative">

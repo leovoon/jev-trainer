@@ -24,6 +24,22 @@ type Guess = { dials: Dials; verdict: Verdict | null };
 const VERDICTS: Verdict[] = ["fast_lane", "decompose", "office"];
 const MODES: Mode[] = ["mixed", "fast_lane", "decompose", "office"];
 const DIAL_KEYS = ["menu", "glance", "branch"] as const;
+
+/** Never throw raw SyntaxError at the user — non-JSON bodies get a readable message. */
+async function readJson(res: Response): Promise<unknown> {
+  const text = await res.text();
+  if (!text) {
+    throw new Error(res.ok ? "empty response" : `HTTP ${res.status}`);
+  }
+  try {
+    return JSON.parse(text);
+  } catch {
+    const snippet = text.slice(0, 120).replace(/\s+/g, " ").trim();
+    throw new Error(
+      res.ok ? snippet : `HTTP ${res.status} — ${snippet || "non-JSON response"}`,
+    );
+  }
+}
 type DialKey = (typeof DIAL_KEYS)[number];
 
 function DialIcon({ k }: { k: DialKey }) {
@@ -633,8 +649,12 @@ export default function Home() {
         body: JSON.stringify({ mode, locale, avoid: avoid.slice(-30) }),
         credentials: "include",
       });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error ?? `HTTP ${res.status}`);
+      const data = (await readJson(res)) as Record<string, unknown>;
+      if (!res.ok) {
+        throw new Error(
+          (typeof data.error === "string" && data.error) || `HTTP ${res.status}`,
+        );
+      }
       setItem(data as QuizItem);
       setSource("llm");
       setSeen((v) => [...v, (data as QuizItem).scenario]);
@@ -676,8 +696,12 @@ export default function Home() {
         body: JSON.stringify({ scenario: text, locale }),
         credentials: "include",
       });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error ?? `HTTP ${res.status}`);
+      const data = (await readJson(res)) as Record<string, unknown>;
+      if (!res.ok) {
+        throw new Error(
+          (typeof data.error === "string" && data.error) || `HTTP ${res.status}`,
+        );
+      }
       setItem(data as QuizItem);
       setSource("custom");
       setSeen((v) => [...v, text]);
