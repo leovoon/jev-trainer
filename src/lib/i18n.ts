@@ -60,24 +60,32 @@ const en = {
   fail: "NO",
   truthLabel: "really:",
   tapTo: "tap →",
+  infoHint: "what is this check?",
+  popupClose: "got it",
   dialsMeta: {
     menu: {
       q: "MENU",
       prompt: "Can you list the answers before you even look?",
       fail: "could go on forever",
       pass: "short fixed list",
+      explanation:
+        "Can you name the options right now — like glancing at a takeout menu and picking? If yes, just pick. If the list keeps growing the more you think, it's too open-ended; chop it into smaller questions first.",
     },
     glance: {
       q: "GLANCE",
       prompt: "One look and you know?",
       fail: "need passes / compare / calculate",
       pass: "one look is enough",
+      explanation:
+        "Like crossing the street — one look and you go. If you have to re-read, weigh things, or do a little math, you need a second look, and that's not a quick call anymore.",
     },
     branch: {
       q: "BRANCH",
       prompt: "Does it pick an action, or write an essay?",
       fail: "spits out a write-up",
       pass: "flips a switch",
+      explanation:
+        "Is the result just doing something — hit send or don't, grab it or leave it? Or do you have to sit down and write it out first? If it needs a write-up, take it to the office, not the fast lane.",
     },
   },
   modeHint: {
@@ -160,24 +168,32 @@ const zhCN: Dict = {
   fail: "挂",
   truthLabel: "实际：",
   tapTo: "点 →",
+  infoHint: "这关是啥？",
+  popupClose: "懂了",
   dialsMeta: {
     menu: {
       q: "MENU",
       prompt: "还没看内容，答案能先列出来吗？",
       fail: "怎么写都写不完",
       pass: "就那几个选项",
+      explanation:
+        "现在就能把选项报出来吗？像看外卖菜单一样，就那几样——能，就直接挑。越想越多、列个没完，说明太散，先拆成几个小问题再选。",
     },
     glance: {
       q: "GLANCE",
       prompt: "扫一眼就定了？",
       fail: "得来回看 / 比一比 / 算一下",
       pass: "一遍就够",
+      explanation:
+        "像过马路，扫一眼就走。要是得重读、反复权衡、或者算一算，那就是还得再看一眼——已经不是秒定了。",
     },
     branch: {
       q: "BRANCH",
       prompt: "是做个动作，还是写篇文章？",
       fail: "交上来一段小作文",
       pass: "拨个开关",
+      explanation:
+        "结果是不是就一个动作——发还是不发、拿还是不拿？还是得坐下来先写一段？要写小作文的，进办公室，不进快车道。",
     },
   },
   modeHint: {
@@ -260,24 +276,32 @@ const zhTW: Dict = {
   fail: "掛",
   truthLabel: "實際：",
   tapTo: "點 →",
+  infoHint: "這關是什麼？",
+  popupClose: "懂了",
   dialsMeta: {
     menu: {
       q: "MENU",
       prompt: "還沒看內容，答案能先列出來嗎？",
       fail: "怎麼寫都寫不完",
       pass: "就那幾個選項",
+      explanation:
+        "現在就能把選項報出來嗎？像看外賣菜單一樣，就那幾樣——能，就直接挑。越想越多、列個沒完，代表太散，先拆成幾個小問題再選。",
     },
     glance: {
       q: "GLANCE",
       prompt: "掃一眼就定了？",
       fail: "得來回看 / 比一比 / 算一下",
       pass: "一遍就夠",
+      explanation:
+        "像過馬路，掃一眼就走。要是得重讀、反覆權衡、或者算一算，那就是還得再看一眼——已經不是秒定了。",
     },
     branch: {
       q: "BRANCH",
       prompt: "是做個動作，還是寫篇文章？",
       fail: "交上來一段小作文",
       pass: "撥個開關",
+      explanation:
+        "結果是不是就一個動作——傳還是不傳、拿還是不拿？還是得坐下來先寫一段？要寫小作文的，進辦公室，不進快車道。",
     },
   },
   modeHint: {

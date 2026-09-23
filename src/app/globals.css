@@ -35,6 +35,11 @@ body {
   font-family: var(--font-geist-sans), system-ui, sans-serif;
 }
 
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
 /* Wallpaper — dimmed so cards/text stay primary. 9:16 on mobile, ~16:9 on desktop. */
 @media (max-width: 1023.98px) {
   body {

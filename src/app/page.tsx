@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   scoreAnswer,
   type Dials,
@@ -24,6 +24,168 @@ type Guess = { dials: Dials; verdict: Verdict | null };
 const VERDICTS: Verdict[] = ["fast_lane", "decompose", "office"];
 const MODES: Mode[] = ["mixed", "fast_lane", "decompose", "office"];
 const DIAL_KEYS = ["menu", "glance", "branch"] as const;
+type DialKey = (typeof DIAL_KEYS)[number];
+
+function DialIcon({ k }: { k: DialKey }) {
+  if (k === "menu") {
+    return (
+      <svg
+        viewBox="0 0 40 40"
+        width="40"
+        height="40"
+        fill="none"
+        aria-hidden="true"
+      >
+        <path
+          d="M9.5 18.5 8 8.5l8.5 6.5"
+          className="fill-accent/10 stroke-accent"
+          strokeWidth="1.75"
+          strokeLinejoin="round"
+        />
+        <path
+          d="M23.5 18.5 25 8.5l-8.5 6.5"
+          className="fill-accent/10 stroke-accent"
+          strokeWidth="1.75"
+          strokeLinejoin="round"
+        />
+        <circle
+          cx="16.5"
+          cy="23.5"
+          r="9.5"
+          className="fill-accent/10 stroke-accent"
+          strokeWidth="1.75"
+        />
+        <circle cx="13" cy="22.5" r="1.35" className="fill-accent" />
+        <circle cx="20" cy="22.5" r="1.35" className="fill-accent" />
+        <path
+          d="M15.2 27c.8.9 2.3.9 3.1 0"
+          className="stroke-accent"
+          strokeWidth="1.5"
+          strokeLinecap="round"
+        />
+        <path
+          d="M6.5 22.5h3M6.5 26h3"
+          className="stroke-accent/70"
+          strokeWidth="1.25"
+          strokeLinecap="round"
+        />
+        <rect
+          x="25"
+          y="14.5"
+          width="12"
+          height="16"
+          rx="2.5"
+          className="fill-card stroke-warn"
+          strokeWidth="1.5"
+        />
+        <circle cx="28.5" cy="19" r="1" className="fill-warn" />
+        <circle cx="28.5" cy="23" r="1" className="fill-warn" />
+        <circle cx="28.5" cy="27" r="1" className="fill-warn" />
+        <path
+          d="M31 19h3.5M31 23h3.5M31 27h2.5"
+          className="stroke-warn"
+          strokeWidth="1.25"
+          strokeLinecap="round"
+        />
+      </svg>
+    );
+  }
+  if (k === "glance") {
+    return (
+      <svg
+        viewBox="0 0 40 40"
+        width="40"
+        height="40"
+        fill="none"
+        aria-hidden="true"
+      >
+        <path
+          d="M11 14.5 9.5 6l7 5.5"
+          className="fill-accent/10 stroke-accent"
+          strokeWidth="1.75"
+          strokeLinejoin="round"
+        />
+        <path
+          d="M29 14.5 30.5 6l-7 5.5"
+          className="fill-accent/10 stroke-accent"
+          strokeWidth="1.75"
+          strokeLinejoin="round"
+        />
+        <ellipse
+          cx="20"
+          cy="23.5"
+          rx="12"
+          ry="12"
+          className="fill-accent/10 stroke-accent"
+          strokeWidth="1.75"
+        />
+        <circle
+          cx="15.5"
+          cy="21.5"
+          r="5"
+          className="fill-background stroke-accent"
+          strokeWidth="1.5"
+        />
+        <circle
+          cx="24.5"
+          cy="21.5"
+          r="5"
+          className="fill-background stroke-accent"
+          strokeWidth="1.5"
+        />
+        <circle cx="15.5" cy="21.5" r="2" className="fill-accent" />
+        <circle cx="24.5" cy="21.5" r="2" className="fill-accent" />
+        <path d="M18.5 27 20 30.5 21.5 27Z" className="fill-warn" />
+        <path
+          d="M31.5 8.5l.9 1.9 1.9.9-1.9.9-.9 1.9-.9-1.9-1.9-.9 1.9-.9.9-1.9Z"
+          className="fill-warn"
+        />
+      </svg>
+    );
+  }
+  return (
+    <svg
+      viewBox="0 0 40 40"
+      width="40"
+      height="40"
+      fill="none"
+      aria-hidden="true"
+    >
+      <circle
+        cx="13"
+        cy="13.5"
+        r="5.5"
+        className="fill-accent/10 stroke-accent"
+        strokeWidth="1.75"
+      />
+      <circle
+        cx="27"
+        cy="13.5"
+        r="5.5"
+        className="fill-accent/10 stroke-accent"
+        strokeWidth="1.75"
+      />
+      <circle cx="13" cy="13.5" r="2" className="fill-accent" />
+      <circle cx="27" cy="13.5" r="2" className="fill-accent" />
+      <ellipse
+        cx="20"
+        cy="26.5"
+        rx="13"
+        ry="9.5"
+        className="fill-accent/10 stroke-accent"
+        strokeWidth="1.75"
+      />
+      <path
+        d="M14 27.5c1.8 2.4 10.2 2.4 12 0"
+        className="stroke-accent"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+      />
+      <circle cx="10.5" cy="25.5" r="1.6" className="fill-accent/40" />
+      <circle cx="29.5" cy="25.5" r="1.6" className="fill-accent/40" />
+    </svg>
+  );
+}
 
 function pickSeed(locale: Locale, mode: Mode, idx: number): QuizItem {
   const pool = seedsFor(locale).filter(
@@ -53,6 +215,16 @@ function QuizBoard({
   });
   const [phase, setPhase] = useState<Phase>("answering");
   const [practiceChoice, setPracticeChoice] = useState<number | null>(null);
+  const [infoKey, setInfoKey] = useState<DialKey | null>(null);
+
+  useEffect(() => {
+    if (!infoKey) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setInfoKey(null);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [infoKey]);
 
   const dialVerdict = useMemo(() => {
     const d = guess.dials;
@@ -93,8 +265,13 @@ function QuizBoard({
           const meta = t.dialsMeta[key];
           const val = guess.dials[key];
           return (
+            <div
+              key={key}
+              className={`flex items-center gap-3 rounded-xl border p-4 transition-colors ${
+                phase === "answering" ? "hover:border-accent/40" : ""
+              } ${val ? "border-accent/50 bg-accent/5 backdrop-blur-md" : "border-border bg-card/45 backdrop-blur-md"}`}
+            >
               <button
-                key={key}
                 type="button"
                 disabled={phase !== "answering"}
                 onClick={() =>
@@ -103,37 +280,47 @@ function QuizBoard({
                     dials: { ...g.dials, [key]: !val },
                   }))
                 }
-                className={`btn-press rounded-xl border p-4 text-left transition-colors ${
-                  phase === "answering" ? "hover:border-accent/40" : ""
-                } ${val ? "border-accent/50 bg-accent/5 backdrop-blur-md" : "border-border bg-card/45 backdrop-blur-md"}`}
+                className={`btn-press min-w-0 flex-1 text-left ${
+                  phase === "answering" ? "cursor-pointer" : "cursor-default"
+                }`}
               >
-              <div className="flex items-center justify-between gap-3">
-                <span className="font-mono text-sm font-semibold text-accent">
-                  {meta.q}
-                </span>
-                <span
-                  className={`rounded-full px-2 py-0.5 font-mono text-xs ${
-                    val ? "bg-good/15 text-good" : "bg-bad/15 text-bad"
-                  }`}
-                >
-                  {val ? t.pass : t.fail}
-                </span>
-              </div>
-              <p className="mt-1 text-sm">{meta.prompt}</p>
-              <p className="mt-0.5 text-xs text-muted">
-                {t.tapTo} {val ? meta.pass : meta.fail}
-              </p>
-              {result && (
-                <p
-                  className={`enter mt-2 font-mono text-xs ${
-                    result.dialHits[key] ? "text-good" : "text-bad"
-                  }`}
-                >
-                  {result.dialHits[key] ? "✓" : "✗"} {t.truthLabel}{" "}
-                  {item.dials[key] ? t.pass : t.fail}
+                <div className="flex items-center justify-between gap-3">
+                  <span className="font-mono text-sm font-semibold text-accent">
+                    {meta.q}
+                  </span>
+                  <span
+                    className={`rounded-full px-2 py-0.5 font-mono text-xs ${
+                      val ? "bg-good/15 text-good" : "bg-bad/15 text-bad"
+                    }`}
+                  >
+                    {val ? t.pass : t.fail}
+                  </span>
+                </div>
+                <p className="mt-1 text-sm">{meta.prompt}</p>
+                <p className="mt-0.5 text-xs text-muted">
+                  {t.tapTo} {val ? meta.pass : meta.fail}
                 </p>
-              )}
-            </button>
+                {result && (
+                  <p
+                    className={`enter mt-2 font-mono text-xs ${
+                      result.dialHits[key] ? "text-good" : "text-bad"
+                    }`}
+                  >
+                    {result.dialHits[key] ? "✓" : "✗"} {t.truthLabel}{" "}
+                    {item.dials[key] ? t.pass : t.fail}
+                  </p>
+                )}
+              </button>
+              <button
+                type="button"
+                onClick={() => setInfoKey(key)}
+                title={t.infoHint}
+                aria-label={`${meta.q} — ${t.infoHint}`}
+                className="btn-press shrink-0 self-start rounded-lg border border-border bg-background/50 p-1 text-muted transition-colors hover:border-accent/40 hover:text-accent"
+              >
+                <DialIcon k={key} />
+              </button>
+            </div>
           );
         })}
       </section>
@@ -327,6 +514,54 @@ function QuizBoard({
             )}
           </section>
         )}
+
+      {infoKey && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-background/70 p-4 backdrop-blur-sm"
+          role="presentation"
+          onClick={() => setInfoKey(null)}
+        >
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-label={t.dialsMeta[infoKey].q}
+            className="popover w-full max-w-sm rounded-xl border border-accent/30 bg-card p-5 shadow-2xl shadow-black/40"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-start gap-3">
+              <span className="shrink-0 rounded-lg border border-border bg-background/50 p-1">
+                <DialIcon k={infoKey} />
+              </span>
+              <div className="min-w-0 flex-1">
+                <p className="font-mono text-sm font-semibold text-accent">
+                  {t.dialsMeta[infoKey].q}
+                </p>
+                <p className="mt-0.5 text-xs text-muted">
+                  {t.dialsMeta[infoKey].prompt}
+                </p>
+              </div>
+            </div>
+            <p className="mt-4 text-sm leading-relaxed">
+              {t.dialsMeta[infoKey].explanation}
+            </p>
+            <div className="mt-4 flex flex-wrap gap-2">
+              <span className="rounded-full bg-good/15 px-2 py-0.5 font-mono text-xs text-good">
+                {t.pass} · {t.dialsMeta[infoKey].pass}
+              </span>
+              <span className="rounded-full bg-bad/15 px-2 py-0.5 font-mono text-xs text-bad">
+                {t.fail} · {t.dialsMeta[infoKey].fail}
+              </span>
+            </div>
+            <button
+              type="button"
+              onClick={() => setInfoKey(null)}
+              className="btn-press mt-4 w-full rounded-xl bg-accent px-4 py-2.5 font-semibold text-background transition-opacity hover:opacity-90"
+            >
+              {t.popupClose}
+            </button>
+          </div>
+        </div>
+      )}
     </>
   );
 }
