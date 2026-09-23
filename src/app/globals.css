@@ -1,26 +1,134 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #0c0f0e;
+  --foreground: #e8ebe6;
+  --muted: #8a918c;
+  --card: #141918;
+  --border: #2a312e;
+  --accent: #7dd3a0;
+  --warn: #e8c268;
+  --bad: #e88b7d;
+  --good: #7dd3a0;
+
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-muted: var(--muted);
+  --color-card: var(--card);
+  --color-border: var(--border);
+  --color-accent: var(--accent);
+  --color-warn: var(--warn);
+  --color-bad: var(--bad);
+  --color-good: var(--good);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-geist-sans), system-ui, sans-serif;
+}
+
+/* Wallpaper — dimmed so cards/text stay primary. 9:16 on mobile, ~16:9 on desktop. */
+@media (max-width: 1023.98px) {
+  body {
+    background-image:
+      linear-gradient(
+        color-mix(in srgb, var(--background) 84%, transparent),
+        color-mix(in srgb, var(--background) 84%, transparent)
+      ),
+      url("/bg-mobile.svg");
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+  }
+}
+@media (min-width: 1024px) {
+  body {
+    background-image:
+      linear-gradient(
+        color-mix(in srgb, var(--background) 84%, transparent),
+        color-mix(in srgb, var(--background) 84%, transparent)
+      ),
+      url("/bg-desktop.svg");
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+  }
+}
+
+/* Press feedback — every pressable element */
+.btn-press {
+  transition: transform 160ms var(--ease-out);
+}
+.btn-press:active:not(:disabled) {
+  transform: scale(0.97);
+}
+
+/* Settings popover — origin = trigger (top-right) */
+.popover {
+  transform-origin: 100% 0;
+  animation: popover-in 160ms var(--ease-out) both;
+}
+
+@keyframes popover-in {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Soft enter for panels that appear occasionally */
+.enter {
+  animation: enter 200ms var(--ease-out) both;
+}
+
+@keyframes enter {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Stagger helper — apply .stagger > * with incremental delays via nth-child */
+.stagger > * {
+  animation: enter 200ms var(--ease-out) both;
+}
+.stagger > *:nth-child(1) { animation-delay: 0ms; }
+.stagger > *:nth-child(2) { animation-delay: 40ms; }
+.stagger > *:nth-child(3) { animation-delay: 80ms; }
+.stagger > *:nth-child(4) { animation-delay: 120ms; }
+.stagger > *:nth-child(5) { animation-delay: 160ms; }
+
+@media (prefers-reduced-motion: reduce) {
+  .btn-press,
+  .btn-press:active:not(:disabled) {
+    transition: none;
+    transform: none;
+  }
+  .popover,
+  .enter,
+  .stagger > * {
+    animation: fade 120ms ease both;
+  }
+  @keyframes fade {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
 }
