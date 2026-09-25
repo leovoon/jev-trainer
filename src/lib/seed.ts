@@ -1,5 +1,6 @@
 import type { QuizItem } from "./schema";
 import type { Locale } from "./i18n";
+import { WORLD_SEEDS_BY_LOCALE } from "./seeds-world";
 
 /** Hand-authored seeds per locale — casual everyday scenes. */
 
@@ -408,10 +409,11 @@ const zhTW: QuizItem[] = [
   },
 ];
 
+// Everyday scenes + world-work scenarios, merged per locale.
 export const SEEDS_BY_LOCALE: Record<Locale, QuizItem[]> = {
-  en,
-  "zh-CN": zhCN,
-  "zh-TW": zhTW,
+  en: [...en, ...WORLD_SEEDS_BY_LOCALE.en],
+  "zh-CN": [...zhCN, ...WORLD_SEEDS_BY_LOCALE["zh-CN"]],
+  "zh-TW": [...zhTW, ...WORLD_SEEDS_BY_LOCALE["zh-TW"]],
 };
 
 /** @deprecated prefer SEEDS_BY_LOCALE — English pool. */
